@@ -1,0 +1,87 @@
+# Reads variables from .env.docker, NOT the project's .env (FOR LOCAL DEVELOPMENT).
+x-app-env: &app-env
+  # Required: set these in .env.docker before running
+  APP_KEY: "${APP_KEY:?set APP_KEY - generate with: php artisan key:generate --show}"
+  APP_URL: "${APP_URL:?set APP_URL to your real domain, e.g. https://kook.example.com}"
+  DB_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD to a strong password}"
+  CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:?set CORS_ALLOWED_ORIGINS to your real origin(s), comma-separated}"
+
+  # Deployment-specific: sensible defaults, override if needed
+  APP_NAME: ${APP_NAME:-Kook}
+  APP_ENV: ${APP_ENV:-production}
+  APP_DEBUG: ${APP_DEBUG:-false}
+  LOG_LEVEL: ${LOG_LEVEL:-error}
+  SESSION_SECURE_COOKIE: ${SESSION_SECURE_COOKIE:-true}
+  DB_DATABASE: ${DB_DATABASE:-kook}
+  DB_USERNAME: ${DB_USERNAME:-kook}
+
+  # Fixed: these values are not meant to be overridden.
+  APP_LOCALE: en
+  APP_FALLBACK_LOCALE: en
+  BCRYPT_ROUNDS: 12
+  LOG_CHANNEL: stack
+  LOG_STACK: single
+  DB_CONNECTION: pgsql
+  DB_HOST: postgres
+  DB_PORT: 5432
+  SESSION_DRIVER: redis
+  QUEUE_CONNECTION: redis
+  CACHE_STORE: redis
+  CACHE_PREFIX: kook_cache
+  FILESYSTEM_DISK: local
+  REDIS_CLIENT: phpredis
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+
+services:
+  app:
+    image: ghcr.io/enioladev1/kook:latest
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      - kook_storage:/var/www/html/storage/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:80/up"]
+      interval: 30s
+      timeout: 3s
+      start_period: 15s
+      retries: 3
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-kook}
+      POSTGRES_USER: ${DB_USERNAME:-kook}
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD to a strong password}"
+    volumes:
+      - kook_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-kook} -d ${DB_DATABASE:-kook}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - kook_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  kook_storage:
+  kook_postgres_data:
+  kook_redis_data:

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -4 615 208">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1C2129"/>
+      <stop offset="1" stop-color="#101216"/>
+    </linearGradient>
+  </defs>
+
+  <svg x="0" y="10" width="180" height="180" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="7.2" fill="url(#tile)"/>
+    <line x1="10" y1="22" x2="22" y2="10" stroke="#FF7A33" stroke-width="4.2" stroke-linecap="round"/>
+    <circle cx="10" cy="22" r="5" fill="#FF7A33"/>
+    <circle cx="22" cy="10" r="3.4" fill="#FF7A33"/>
+  </svg>
+
+  <text x="222" y="142" font-family="Geom" font-weight="800" font-size="120" letter-spacing="2" fill="#14171C">KOOK</text>
+</svg>

@@ -1,0 +1,12 @@
+# Defense in depth: the web server document root must always point to
+# public/, never to this project root. This file blocks direct access in
+# case a misconfigured vhost (e.g. XAMPP serving htdocs/ directly) exposes
+# this directory anyway - it must never be able to serve .env, storage/,
+# vendor/, or any other sensitive project file.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>
