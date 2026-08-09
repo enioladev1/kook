@@ -290,16 +290,13 @@ export default function ProjectsShow({
                                                 />
                                                 <div className="grid gap-1">
                                                     <Label htmlFor="failure_emails_enabled">
-                                                        Email me when a
-                                                        webhook stops
-                                                        delivering
+                                                        Email me when a webhook
+                                                        stops delivering
                                                     </Label>
                                                     <p className="text-sm text-muted-foreground">
-                                                        Sent once a
-                                                        delivery has
-                                                        exhausted all
-                                                        retries for this
-                                                        project.
+                                                        Sent once a delivery has
+                                                        exhausted all retries
+                                                        for this project.
                                                     </p>
                                                 </div>
                                             </div>
