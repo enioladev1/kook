@@ -25,6 +25,7 @@ class UpdateProjectRequest extends FormRequest
     {
         return [
             'name' => $this->projectNameRules(),
+            'failure_emails_enabled' => $this->projectFailureEmailsEnabledRules(),
         ];
     }
 }

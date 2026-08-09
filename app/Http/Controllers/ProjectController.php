@@ -59,7 +59,12 @@ class ProjectController extends Controller
 
     public function update(UpdateProjectRequest $request, Project $project): RedirectResponse
     {
-        $this->projects->update($request->user(), $project, $request->validated('name'));
+        $this->projects->update(
+            $request->user(),
+            $project,
+            $request->validated('name'),
+            $request->boolean('failure_emails_enabled'),
+        );
 
         return to_route('projects.show', ['project' => $project, 'tab' => 'settings']);
     }

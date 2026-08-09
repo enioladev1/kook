@@ -233,6 +233,37 @@ test('a user can update their own project', function () {
     expect($project->fresh()->name)->toBe('New name');
 });
 
+test('new projects default to failure emails enabled', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post('/projects', ['name' => 'Production API']);
+
+    expect(Project::first()->failure_emails_enabled)->toBeTrue();
+});
+
+test('a user can turn off failure emails for a project', function () {
+    $user = User::factory()->create();
+    $project = Project::factory()->for($user)->create(['failure_emails_enabled' => true]);
+
+    $this->actingAs($user)
+        ->put("/projects/{$project->id}", ['name' => $project->name])
+        ->assertRedirect("/projects/{$project->id}?tab=settings");
+
+    expect($project->fresh()->failure_emails_enabled)->toBeFalse();
+});
+
+test('a user can turn failure emails back on for a project', function () {
+    $user = User::factory()->create();
+    $project = Project::factory()->for($user)->create(['failure_emails_enabled' => false]);
+
+    $this->actingAs($user)->put("/projects/{$project->id}", [
+        'name' => $project->name,
+        'failure_emails_enabled' => '1',
+    ]);
+
+    expect($project->fresh()->failure_emails_enabled)->toBeTrue();
+});
+
 test('a user cannot update another users project', function () {
     $owner = User::factory()->create();
     $intruder = User::factory()->create();

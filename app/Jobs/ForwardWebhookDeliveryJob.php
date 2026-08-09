@@ -8,6 +8,7 @@ use App\Exceptions\WebhookDeliveryFailedException;
 use App\Models\WebhookEvent;
 use App\Repositories\WebhookDeliveryRepository;
 use App\Services\AuditLogService;
+use App\Services\WebhookFailureNotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -79,7 +80,7 @@ class ForwardWebhookDeliveryJob implements ShouldQueue
 
     public function failed(?Throwable $exception): void
     {
-        $event = WebhookEvent::with('webhookEndpoint.project')->find($this->webhookEventId);
+        $event = WebhookEvent::with('webhookEndpoint.project.user')->find($this->webhookEventId);
 
         if ($event === null) {
             return;
@@ -92,6 +93,8 @@ class ForwardWebhookDeliveryJob implements ShouldQueue
             $event,
             ['webhook_endpoint_id' => $event->webhookEndpoint->id],
         );
+
+        app(WebhookFailureNotificationService::class)->notifyExhausted($event);
     }
 
     private function nextBackoffSeconds(int $attemptNumber): int

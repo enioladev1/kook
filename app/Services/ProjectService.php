@@ -38,10 +38,13 @@ class ProjectService
         });
     }
 
-    public function update(User $user, Project $project, string $name): Project
+    public function update(User $user, Project $project, string $name, bool $failureEmailsEnabled): Project
     {
-        return DB::transaction(function () use ($user, $project, $name) {
-            $project = $this->projects->update($project, ['name' => $name]);
+        return DB::transaction(function () use ($user, $project, $name, $failureEmailsEnabled) {
+            $project = $this->projects->update($project, [
+                'name' => $name,
+                'failure_emails_enabled' => $failureEmailsEnabled,
+            ]);
 
             $this->auditLog->record($user, $project, 'project.updated', $project);
 

@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/projects/empty-state';
 import { ProjectNav } from '@/components/projects/project-nav';
 import type { ProjectNavTab } from '@/components/projects/project-nav';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { endpointHealth } from '@/lib/endpoint-health';
@@ -276,6 +277,31 @@ export default function ProjectsShow({
                                                 <InputError
                                                     message={errors.name}
                                                 />
+                                            </div>
+
+                                            <div className="flex items-start gap-3">
+                                                <Checkbox
+                                                    id="failure_emails_enabled"
+                                                    name="failure_emails_enabled"
+                                                    defaultChecked={
+                                                        project.failure_emails_enabled
+                                                    }
+                                                    data-test="failure-emails-enabled-checkbox"
+                                                />
+                                                <div className="grid gap-1">
+                                                    <Label htmlFor="failure_emails_enabled">
+                                                        Email me when a
+                                                        webhook stops
+                                                        delivering
+                                                    </Label>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Sent once a
+                                                        delivery has
+                                                        exhausted all
+                                                        retries for this
+                                                        project.
+                                                    </p>
+                                                </div>
                                             </div>
 
                                             <Button

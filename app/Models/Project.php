@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  * @property string $user_id
  * @property string $name
  * @property string $slug
+ * @property bool $failure_emails_enabled
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -23,7 +24,14 @@ class Project extends Model
     /** @use HasFactory<ProjectFactory> */
     use HasFactory, HasUuids;
 
-    protected $fillable = ['name', 'slug'];
+    protected $fillable = ['name', 'slug', 'failure_emails_enabled'];
+
+    protected function casts(): array
+    {
+        return [
+            'failure_emails_enabled' => 'boolean',
+        ];
+    }
 
     /**
      * @return BelongsTo<User, $this>
