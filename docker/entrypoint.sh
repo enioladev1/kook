@@ -9,4 +9,6 @@ php artisan view:cache
 # container still shutting down, or multiple replicas start together.
 php artisan migrate --force --isolated
 
+php artisan db:seed --force --class=ProviderSeeder
+
 exec "$@"
