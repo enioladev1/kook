@@ -20,13 +20,11 @@ class WebhookIngestController extends Controller
         }
 
         try {
-            $event = $this->ingest->ingest($ingestToken, $request->getContent(), $headers);
+            $this->ingest->ingest($ingestToken, $request->getContent(), $headers);
         } catch (WebhookEndpointNotFoundException) {
             return response()->json(['message' => 'Not found.'], 404);
         }
 
-        $status = $event->wasRecentlyCreated ? 202 : 200;
-
-        return response()->json(['received' => true], $status);
+        return response()->json(['received' => true], 200);
     }
 }

@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -121,7 +122,11 @@ export default function Login({ status, canResetPassword }: Props) {
     );
 }
 
-Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
-};
+Login.layout = (page: React.ReactNode) => (
+    <AuthSplitLayout
+        title="Log in to your account"
+        description="Enter your email and password below to log in"
+    >
+        {page}
+    </AuthSplitLayout>
+);

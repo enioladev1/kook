@@ -5,6 +5,8 @@ use App\Models\AuditLog;
 use App\Models\EmailSetting;
 use App\Models\User;
 use App\Services\EmailSettingService;
+use Illuminate\Encryption\Encrypter;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 test('a guest cannot view or mutate email settings', function () {
@@ -49,6 +51,34 @@ test('has_api_key and has_smtp_password are false until a secret is saved', func
     $this->actingAs($user)
         ->get('/settings/email')
         ->assertInertia(fn ($page) => $page
+            ->where('emailSetting.has_api_key', false)
+            ->where('emailSetting.has_smtp_password', false)
+        );
+});
+
+test('the settings page still renders when a saved secret was encrypted under a since-rotated APP_KEY', function () {
+    $user = User::factory()->create();
+    $setting = EmailSetting::query()->create([
+        'provider' => 'resend',
+        'from_address' => 'hello@example.com',
+        'api_key' => 'sk_live_super_secret',
+        'smtp_password' => 'super-secret-password',
+    ]);
+
+    // Simulate ciphertext encrypted under a different APP_KEY than the one
+    // currently configured - decrypting it now fails with "The MAC is
+    // invalid" instead of the usual "value not set" (null) case.
+    $foreignEncrypter = new Encrypter(Encrypter::generateKey(config('app.cipher')), config('app.cipher'));
+    DB::table('email_settings')->where('id', $setting->id)->update([
+        'api_key' => $foreignEncrypter->encrypt('sk_live_super_secret', false),
+        'smtp_password' => $foreignEncrypter->encrypt('super-secret-password', false),
+    ]);
+
+    $this->actingAs($user)
+        ->get('/settings/email')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('settings/email')
             ->where('emailSetting.has_api_key', false)
             ->where('emailSetting.has_smtp_password', false)
         );

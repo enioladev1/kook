@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { PulseTrace } from '@/components/marketing/pulse-trace';
+import { PulseTrace } from '@/components/pulse-trace';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 

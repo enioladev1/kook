@@ -8,6 +8,7 @@ use App\Mail\TestEmail;
 use App\Models\EmailSetting;
 use App\Models\User;
 use App\Repositories\EmailSettingRepository;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -37,13 +38,23 @@ class EmailSettingService
             }
         }
 
-        return DB::transaction(function () use ($user, $data) {
+        $setting = DB::transaction(function () use ($user, $data) {
             $setting = $this->settings->update($this->settings->current(), $data);
 
             $this->auditLog->record($user, null, 'email_settings.updated', $setting);
 
             return $setting;
         });
+
+        // Queue workers boot once and keep running - AppServiceProvider's
+        // mail config (built from this table) only applies at that one boot,
+        // so a long-running worker never sees a settings change on its own.
+        // Signal it to restart after its current job so queued mail (e.g.
+        // password resets) picks up the new credentials instead of failing
+        // with "Mailer [x] is not defined."
+        Artisan::call('queue:restart');
+
+        return $setting;
     }
 
     /**

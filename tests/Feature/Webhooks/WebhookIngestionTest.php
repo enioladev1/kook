@@ -37,7 +37,7 @@ test('a relay endpoint accepts, stores, and forwards a webhook', function () {
         'X-Custom-Header' => 'abc',
     ]);
 
-    $response->assertStatus(202);
+    $response->assertStatus(200);
 
     $event = WebhookEvent::first();
     expect($event)
@@ -68,7 +68,7 @@ test('duplicate deliveries with the same idempotency key are not reprocessed', f
     $headers = ['Idempotency-Key' => 'evt_123'];
 
     $this->postJson("/webhooks/{$endpoint->ingest_token}", ['event' => 'first'], $headers)
-        ->assertStatus(202);
+        ->assertStatus(200);
 
     $this->postJson("/webhooks/{$endpoint->ingest_token}", ['event' => 'first'], $headers)
         ->assertStatus(200);
@@ -100,7 +100,7 @@ test('a managed endpoint with a valid signature is verified and forwarded', func
         'HTTP_X_WEBHOOK_SIGNATURE' => $signature,
     ], $body);
 
-    $response->assertStatus(202);
+    $response->assertStatus(200);
 
     $event = WebhookEvent::first();
     expect($event)
@@ -131,7 +131,7 @@ test('a managed endpoint with an invalid signature is rejected and never forward
         'HTTP_X_WEBHOOK_SIGNATURE' => 'wrong-signature',
     ], $body);
 
-    $response->assertStatus(202);
+    $response->assertStatus(200);
 
     $event = WebhookEvent::first();
     expect($event)
@@ -165,7 +165,7 @@ test('a stripe managed endpoint verifies the signed event end to end', function 
         'HTTP_STRIPE_SIGNATURE' => "t={$timestamp},v1={$signature}",
     ], $body);
 
-    $response->assertStatus(202);
+    $response->assertStatus(200);
 
     $event = WebhookEvent::first();
     expect($event)
@@ -199,7 +199,7 @@ test('a flutterwave managed endpoint verifies the hmac-signed event end to end',
         'HTTP_FLUTTERWAVE_SIGNATURE' => $signature,
     ], $body);
 
-    $response->assertStatus(202);
+    $response->assertStatus(200);
 
     $event = WebhookEvent::first();
     expect($event)
@@ -231,7 +231,7 @@ test('a flutterwave managed endpoint accepts the legacy plain secret hash header
         'HTTP_VERIF_HASH' => $secret,
     ], $body);
 
-    $response->assertStatus(202);
+    $response->assertStatus(200);
 
     expect(WebhookEvent::first())
         ->signature_valid->toBeTrue()
@@ -247,7 +247,7 @@ test('the event name is resolved from a type field when no event field is presen
     ]);
 
     $this->postJson("/webhooks/{$endpoint->ingest_token}", ['type' => 'charge.success'])
-        ->assertStatus(202);
+        ->assertStatus(200);
 
     expect(WebhookEvent::first())->event_name->toBe('charge.success');
 });
@@ -261,7 +261,7 @@ test('the event name is null when the payload has no recognizable event field', 
     ]);
 
     $this->postJson("/webhooks/{$endpoint->ingest_token}", ['foo' => 'bar'])
-        ->assertStatus(202);
+        ->assertStatus(200);
 
     expect(WebhookEvent::first())->event_name->toBeNull();
 });

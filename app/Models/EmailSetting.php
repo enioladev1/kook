@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Enums\EmailProvider;
 use App\Enums\SmtpEncryption;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
 
 /**
  * @property string $id
@@ -79,7 +81,7 @@ class EmailSetting extends Model
     protected function hasApiKey(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->api_key !== null,
+            get: fn () => $this->isDecryptable('api_key'),
         );
     }
 
@@ -89,7 +91,30 @@ class EmailSetting extends Model
     protected function hasSmtpPassword(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->smtp_password !== null,
+            get: fn () => $this->isDecryptable('smtp_password'),
         );
+    }
+
+    /**
+     * Decrypts the raw column directly (bypassing the "encrypted" cast, whose
+     * exceptions PHPStan can't see through a dynamic property access) so a
+     * secret encrypted under a since-rotated APP_KEY is reported as unset
+     * instead of crashing the settings page or the boot-time mail config.
+     */
+    private function isDecryptable(string $column): bool
+    {
+        $raw = $this->getRawOriginal($column);
+
+        if ($raw === null) {
+            return false;
+        }
+
+        try {
+            Crypt::decryptString($raw);
+
+            return true;
+        } catch (DecryptException) {
+            return false;
+        }
     }
 }

@@ -1,12 +1,11 @@
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { login } from '@/routes';
+import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { store } from '@/routes/register';
 
 type Props = {
@@ -125,17 +124,6 @@ export default function Register({ passwordRules }: Props) {
                                 Create account
                             </Button>
                         </div>
-
-                        <div className="text-center text-sm text-[#8A93A6]">
-                            Already have an account?{' '}
-                            <TextLink
-                                href={login()}
-                                tabIndex={6}
-                                className="text-[#FF7A33] decoration-[#FF7A33]/40"
-                            >
-                                Log in
-                            </TextLink>
-                        </div>
                     </>
                 )}
             </Form>
@@ -143,7 +131,11 @@ export default function Register({ passwordRules }: Props) {
     );
 }
 
-Register.layout = {
-    title: 'Create the admin account',
-    description: 'This is the only account Kook will ever have.',
-};
+Register.layout = (page: React.ReactNode) => (
+    <AuthSplitLayout
+        title="Create the admin account"
+        description="This is the only account Kook will ever have."
+    >
+        {page}
+    </AuthSplitLayout>
+);

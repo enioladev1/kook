@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Mail\ResetPasswordMail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
@@ -70,5 +72,15 @@ class User extends Authenticatable
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    /**
+     * Send the password reset link via Kook's own branded, queued mailable
+     * instead of Laravel's default notification/template.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        Mail::to($this->getEmailForPasswordReset())
+            ->queue(new ResetPasswordMail($token, $this->getEmailForPasswordReset()));
     }
 }
