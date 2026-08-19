@@ -31,6 +31,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { DeleteEndpointDialog } from '@/components/webhook-endpoints/delete-endpoint-dialog';
 import { endpointHealth } from '@/lib/endpoint-health';
 import { providerSecretGuidance } from '@/lib/provider-secret-guidance';
 import { endpointStatusTone, eventStatusTone } from '@/lib/status-tones';
@@ -133,7 +134,9 @@ export default function WebhookEndpointsShow({
                             )}
                         </span>
                     }
-                />
+                >
+                    <DeleteEndpointDialog webhookEndpoint={webhookEndpoint} />
+                </PageHeader>
 
                 <div className="grid gap-6 md:grid-cols-2">
                     <Section title="Ingest URL">
