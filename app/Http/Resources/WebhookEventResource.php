@@ -23,6 +23,8 @@ class WebhookEventResource extends JsonResource
             'event_name' => $this->event_name,
             'headers' => $this->headers,
             'payload' => $this->payload,
+            // Byte-for-byte body as received, so the UI renders it without reordering keys.
+            'raw_body' => $this->raw_body,
             'signature_valid' => $this->signature_valid,
             'status' => $this->status,
             'received_at' => $this->received_at,

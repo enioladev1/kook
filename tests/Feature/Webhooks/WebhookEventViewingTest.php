@@ -110,6 +110,28 @@ test('a user cannot view another users event', function () {
         ->assertNotFound();
 });
 
+test('the event show page receives the body exactly as it was received', function () {
+    $user = User::factory()->create();
+    $project = Project::factory()->for($user)->create();
+    $endpoint = WebhookEndpoint::factory()->for($project)->create();
+
+    // Keys deliberately out of alphabetical / insertion-friendly order.
+    $rawBody = '{"z_last":1,"1":"numeric key","a_first":{"nested":true}}';
+    $event = WebhookEvent::factory()->create([
+        'webhook_endpoint_id' => $endpoint->id,
+        'project_id' => $project->id,
+        'payload' => json_decode($rawBody, true),
+        'raw_body' => $rawBody,
+    ]);
+
+    $this->actingAs($user)
+        ->get("/events/{$event->id}")
+        ->assertInertia(fn ($page) => $page
+            ->component('events/show')
+            ->where('event.raw_body', $rawBody)
+        );
+});
+
 test('an event response never exposes the raw signing material of its endpoint', function () {
     $user = User::factory()->create();
     $project = Project::factory()->for($user)->create();

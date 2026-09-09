@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Form, Head, Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { PageHeader } from '@/components/dashboard/page-header';
+import { PayloadViewer } from '@/components/dashboard/payload-viewer';
 import { StatusChip } from '@/components/dashboard/status-chip';
 import { Button } from '@/components/ui/button';
 import { deliveryStatusTone, eventStatusTone } from '@/lib/status-tones';
@@ -27,7 +28,7 @@ type EventDetail = {
     status: WebhookEventStatus;
     signature_valid: boolean | null;
     received_at: string;
-    payload: Record<string, unknown>;
+    raw_body: string;
     headers: Record<string, string>;
     webhookEndpoint: { id: string; name: string };
 };
@@ -102,9 +103,7 @@ export default function EventsShow({
                 </PageHeader>
 
                 <Section title="Payload">
-                    <pre className="max-h-96 overflow-auto rounded-xl bg-muted p-4 font-mono text-xs whitespace-pre-wrap">
-                        {JSON.stringify(event.payload, null, 2)}
-                    </pre>
+                    <PayloadViewer raw={event.raw_body} />
                 </Section>
 
                 <Section title="Headers">
