@@ -51,6 +51,13 @@ class ForwardWebhookDeliveryJob implements ShouldQueue
             return;
         }
 
+        // The automatic retry chain (attemptOffset 0) stands down once the event
+        // has already been delivered, e.g. a manual replay succeeded while this
+        // retry was still pending. Explicit replays (attemptOffset > 0) always run.
+        if ($this->attemptOffset === 0 && $this->alreadyDelivered($event)) {
+            return;
+        }
+
         $queueAttempt = $this->attempts();
         $isFinalAttempt = $queueAttempt >= $this->tries;
 
@@ -95,6 +102,13 @@ class ForwardWebhookDeliveryJob implements ShouldQueue
         );
 
         app(WebhookFailureNotificationService::class)->notifyExhausted($event);
+    }
+
+    private function alreadyDelivered(WebhookEvent $event): bool
+    {
+        return $event->deliveries()
+            ->where('status', WebhookDeliveryStatus::Delivered)
+            ->exists();
     }
 
     private function nextBackoffSeconds(int $attemptNumber): int

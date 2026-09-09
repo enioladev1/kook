@@ -141,6 +141,54 @@ test('exhausting all retries does not email when the project owner has no email 
     Mail::assertNothingQueued();
 });
 
+test('the automatic retry chain stands down once the event has already been delivered', function () {
+    Http::fake(['example.com/*' => Http::response('ok', 200)]);
+
+    $endpoint = WebhookEndpoint::factory()->create(['destination_url' => 'https://example.com/hooks']);
+    $event = WebhookEvent::factory()->create([
+        'webhook_endpoint_id' => $endpoint->id,
+        'project_id' => $endpoint->project_id,
+        'status' => WebhookEventStatus::Success,
+    ]);
+
+    // A manual replay already delivered this event while the retry was pending.
+    WebhookDelivery::factory()->for($event, 'event')->create([
+        'attempt_number' => 2,
+        'status' => WebhookDeliveryStatus::Delivered,
+        'http_status_code' => 200,
+    ]);
+
+    $job = new ForwardWebhookDeliveryJob($event->id);
+    app()->call([$job, 'handle']);
+
+    Http::assertNothingSent();
+    expect(WebhookDelivery::where('event_id', $event->id)->count())->toBe(1);
+});
+
+test('an explicit replay still forwards even when the event was already delivered', function () {
+    Http::fake(['example.com/*' => Http::response('ok', 200)]);
+
+    $endpoint = WebhookEndpoint::factory()->create(['destination_url' => 'https://example.com/hooks']);
+    $event = WebhookEvent::factory()->create([
+        'webhook_endpoint_id' => $endpoint->id,
+        'project_id' => $endpoint->project_id,
+        'status' => WebhookEventStatus::Success,
+    ]);
+
+    WebhookDelivery::factory()->for($event, 'event')->create([
+        'attempt_number' => 1,
+        'status' => WebhookDeliveryStatus::Delivered,
+        'http_status_code' => 200,
+    ]);
+
+    // attemptOffset > 0 marks this as a user-triggered replay.
+    $job = new ForwardWebhookDeliveryJob($event->id, 1);
+    app()->call([$job, 'handle']);
+
+    Http::assertSentCount(1);
+    expect(WebhookDelivery::where('event_id', $event->id)->count())->toBe(2);
+});
+
 test('a successful delivery does not throw and requires no retry', function () {
     Http::fake(['example.com/*' => Http::response('ok', 200)]);
 
