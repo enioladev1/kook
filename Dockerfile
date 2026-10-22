@@ -49,6 +49,7 @@ RUN apk add --no-cache $PHP_PACKAGES php84-fpm php84-pecl-redis php84-pcntl \
     && setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
 
 COPY docker/opcache.ini /etc/php84/conf.d/zz-opcache.ini
+COPY docker/security.ini /etc/php84/conf.d/zz-security.ini
 COPY docker/www.conf /etc/php84/php-fpm.d/www.conf
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
